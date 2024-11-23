@@ -7,7 +7,9 @@ import ProfilePage from "../profile/ProfilePage";
 
 const Tab = createBottomTabNavigator();
 
-export default function Tabs() {
+export default function Tabs({ route }) {
+  const { userId } = route.params;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,6 +27,7 @@ export default function Tabs() {
       <Tab.Screen
         name="HomePage"
         component={HomePage}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => (
@@ -36,6 +39,7 @@ export default function Tabs() {
       <Tab.Screen
         name="CoursePage"
         component={CoursePage}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Courses",
           tabBarIcon: ({ color, size }) => (
@@ -47,6 +51,7 @@ export default function Tabs() {
       <Tab.Screen
         name="Profile"
         component={ProfilePage}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) => (

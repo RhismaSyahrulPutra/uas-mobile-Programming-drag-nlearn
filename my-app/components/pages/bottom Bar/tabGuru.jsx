@@ -7,7 +7,9 @@ import ProfileGuru from "../profile/ProfileGuru";
 
 const Tab = createBottomTabNavigator();
 
-export default function TabGuru() {
+export default function TabGuru({ route }) {
+  const { userId } = route.params;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,6 +27,7 @@ export default function TabGuru() {
       <Tab.Screen
         name="homeGuru"
         component={HomeGuru}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => (
@@ -36,6 +39,7 @@ export default function TabGuru() {
       <Tab.Screen
         name="studentTable"
         component={Table}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Student Data",
           tabBarIcon: ({ color, size }) => (
@@ -47,6 +51,7 @@ export default function TabGuru() {
       <Tab.Screen
         name="ProfileGuru"
         component={ProfileGuru}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Teacher Profile",
           tabBarIcon: ({ color, size }) => (

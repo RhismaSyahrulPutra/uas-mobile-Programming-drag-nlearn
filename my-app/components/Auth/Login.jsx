@@ -51,7 +51,11 @@ export default function Login() {
               .single();
 
             if (error) {
-              showToast("error", "User not found");
+              if (error.message.includes("not found")) {
+                showToast("error", "User not found");
+              } else {
+                showToast("error", "An error occurred");
+              }
               resetForm();
               return;
             }
@@ -66,7 +70,7 @@ export default function Login() {
 
             if (data.role === "student") {
               navigation.navigate("Tabs", { userId: data.id });
-            } else if (data.role === "guru") {
+            } else if (data.role === "teacher") {
               navigation.navigate("TabGuru", { userId: data.id });
             } else if (data.role === "admin") {
               navigation.navigate("TabAdmin", { userId: data.id });

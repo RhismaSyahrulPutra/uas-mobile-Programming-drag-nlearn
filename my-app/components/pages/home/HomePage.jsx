@@ -1,42 +1,79 @@
-import React from "react";
-import { View, Text, ScrollView, Image, Button } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for the arrow icon
+import React, { useEffect, useState } from "react";
+import { View, Text, ScrollView, Image, ActivityIndicator } from "react-native";
+import { supabase } from "../../client/supabaseClient";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 export default function HomePage() {
+  const route = useRoute();
+  const { userId } = route.params;
+
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("account")
+          .select("username")
+          .eq("id", userId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        setUsername(data.username);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user data:", error.message);
+        setError("Error fetching user data. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
+
+  const navigation = useNavigation();
+
   return (
     <View className="flex-1 bg-gray-100">
-      {/* Fixed Header */}
       <View className="bg-white pt-10 pb-3 px-5 flex justify-start items-start shadow-lg fixed top-0 left-0 right-0 z-10">
         <Text className="text-blue-500 text-lg font-bold">Home Page</Text>
       </View>
 
-      {/* Scrollable Content */}
       <ScrollView>
         <View className="flex-1 p-5">
-          {/* User Profile Section */}
           <View className="flex-row items-center justify-between mb-6">
             <View className="flex-row items-center">
               <Image
-                source={{ uri: "https://via.placeholder.com/50" }} // Replace with real image
+                source={{ uri: "https://via.placeholder.com/50" }}
                 className="rounded-full w-12 h-12 mr-4"
               />
               <View>
-                <Text className="text-2xl font-bold text-gray-800">
-                  Hi, User!
-                </Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#0000ff" />
+                ) : error ? (
+                  <Text className="text-red-500">{error}</Text>
+                ) : (
+                  <Text className="text-2xl font-bold text-gray-800">
+                    Hi, {username || "User"}!
+                  </Text>
+                )}
                 <Text className="text-gray-600">Welcome back!</Text>
               </View>
             </View>
           </View>
-          {/* Horizontal line */}
+
           <View className="border-b border-gray-400 mb-4"></View>
 
-          {/* "Passed Courses" Section */}
           <Text className="text-xl font-semibold text-gray-800 mb-4">
             Passed Courses
           </Text>
 
-          {/* Horizontal Scrollable Cards */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row space-x-4">
               <View className="bg-white p-4 rounded-lg shadow-md w-60">
@@ -73,7 +110,6 @@ export default function HomePage() {
             </View>
           </ScrollView>
 
-          {/* Achievements Section */}
           <View className="mt-6">
             <Text className="text-xl font-semibold text-gray-800 mb-4">
               Your Achievements
@@ -92,7 +128,6 @@ export default function HomePage() {
             </View>
           </View>
 
-          {/* Recommended Courses Section */}
           <View className="mt-6">
             <Text className="text-xl font-semibold text-gray-800 mb-4">
               Recommended Courses

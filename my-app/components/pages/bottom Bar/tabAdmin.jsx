@@ -6,7 +6,9 @@ import TeacherDataAdmin from "../admin/TeacherDataAdmin";
 
 const Tab = createBottomTabNavigator();
 
-export default function TabAdmin() {
+export default function TabAdmin({ route }) {
+  const { userId } = route.params;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -22,10 +24,11 @@ export default function TabAdmin() {
       }}
     >
       <Tab.Screen
-        name="homeGuru"
+        name="TeacherDataAdmin"
         component={TeacherDataAdmin}
+        initialParams={{ userId }}
         options={{
-          tabBarLabel: "Teachear Data",
+          tabBarLabel: "Teacher Data",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="document-text" size={size} color={color} />
           ),
@@ -33,8 +36,9 @@ export default function TabAdmin() {
       />
 
       <Tab.Screen
-        name="studentTable"
+        name="StudentDataAdmin"
         component={StudentDataAdmin}
+        initialParams={{ userId }}
         options={{
           tabBarLabel: "Student Data",
           tabBarIcon: ({ color, size }) => (

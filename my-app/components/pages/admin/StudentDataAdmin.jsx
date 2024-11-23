@@ -196,9 +196,6 @@ export default function StudentDataAdmin() {
                   Kelas
                 </Text>
                 <Text className="text-white text-center w-32 font-semibold">
-                  Kursus (Selesai/Total)
-                </Text>
-                <Text className="text-white text-center w-32 font-semibold">
                   Action
                 </Text>
               </View>
@@ -214,9 +211,6 @@ export default function StudentDataAdmin() {
                   <Text className="text-center w-48">{item.name}</Text>
                   <Text className="text-center w-48">{item.username}</Text>
                   <Text className="text-center w-24">{item.class}</Text>
-                  <Text className="text-center w-32">
-                    {item.coursesCompleted}/{item.totalCourses}
-                  </Text>
                   <View className="flex-row space-x-2">
                     <TouchableOpacity
                       className="bg-blue-500 p-2 rounded-md"
@@ -268,20 +262,20 @@ export default function StudentDataAdmin() {
         </View>
 
         {/* Tombol Tambah */}
-        <TouchableOpacity
-          className="flex-row items-center justify-center bg-green-500 p-3 rounded-lg mt-4"
-          onPress={() => console.log("Add new student")}
-        >
-          <Ionicons name="add" size={20} color="white" />
-          <Text className="text-white font-semibold ml-2">Tambah Siswa</Text>
+        <TouchableOpacity className="flex-row items-center bg-blue-500 p-3 rounded-lg fixed bottom-6 right-6">
+          <FontAwesome name="plus" size={16} color="white" />
+          <Text className="text-white ml-2">Tambah Data</Text>
         </TouchableOpacity>
-      </View>
 
-      <DetailTableStudent
-        isVisible={modalVisible}
-        selectedItem={selectedItem}
-        onClose={closeModal}
-      />
+        {/* Modal Detail */}
+        {modalVisible && selectedItem && (
+          <DetailTableStudent
+            item={selectedItem}
+            visible={modalVisible}
+            onClose={closeModal}
+          />
+        )}
+      </View>
     </View>
   );
 }
