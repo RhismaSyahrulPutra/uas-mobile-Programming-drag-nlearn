@@ -1,23 +1,20 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import LogoApp from "../../assets/LogoApp.png";
 
 export default function Welcome() {
   const navigation = useNavigation();
 
   return (
     <View className="flex-1 justify-center items-center bg-white p-5">
-      {/* Welcome Text */}
-      <Text className="text-3xl font-bold mb-4 text-gray-800">
-        Selamat Datang!
+      <Image source={LogoApp} className="w-32 h-32 mb-2" resizeMode="contain" />
+      <Text className="text-3xl font-extrabold text-blue-500 mb-4">
+        Drag N'Learn
       </Text>
-
-      {/* Subtitle Text */}
-      <Text className="text-base text-gray-600 mb-8 text-center">
-        Jelajahi fitur dan materi pembelajaran yang kami tawarkan
+      <Text className="text-base text-gray-600 text-center mb-8 px-4 text-sm">
+        Jelajahi berbagai fitur pembelajaran yang menarik dan mudah diakses.
       </Text>
-
-      {/* Sign In Button */}
       <View className="w-full mb-4">
         <TouchableOpacity
           onPress={() => navigation.navigate("Login")}
@@ -28,13 +25,9 @@ export default function Welcome() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Or Text */}
-      <View className="">
+      <View className="mb-4">
         <Text className="text-gray-500">or</Text>
       </View>
-
-      {/* Sign Up Button */}
       <View className="w-full mt-4">
         <TouchableOpacity
           onPress={() => navigation.navigate("Register")}

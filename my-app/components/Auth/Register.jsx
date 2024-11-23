@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "react-native-vector-icons";
 import { registerSchema } from "./validates/form-regis";
+import { supabase } from "../client/supabaseClient";
 
 export default function Register() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -18,26 +19,50 @@ export default function Register() {
         </TouchableOpacity>
       </View>
 
-      <Text className="text-3xl font-bold mb-8 text-gray-800">Register</Text>
+      <Text className="text-3xl font-bold mb-8 text-blue-500">
+        Sign Up Page
+      </Text>
 
       <Formik
-        initialValues={{ name: "", email: "", password: "" }}
+        initialValues={{ username: "", email: "", password: "" }}
         validationSchema={registerSchema}
-        onSubmit={(values, { resetForm }) => {
-          // Simulasi sukses registrasi
-          Alert.alert(
-            "Registration Successful",
-            `Name: ${values.name}, Email: ${values.email}`,
-            [
+        onSubmit={async (values, { resetForm }) => {
+          try {
+            if (!values.password) {
+              throw new Error("Password is required.");
+            }
+
+            const { data, error } = await supabase.from("account").insert([
               {
-                text: "OK",
-                onPress: () => {
-                  resetForm(); // Reset form setelah submit
-                  navigation.navigate("FormRegis"); // Navigasi ke halaman Home
-                },
+                username: values.username,
+                email: values.email,
+                password: values.password,
+                role: "student",
+                account_create: new Date().toISOString(),
+                last_login: new Date().toISOString(),
               },
-            ]
-          );
+            ]);
+
+            if (error) {
+              throw new Error(error.message);
+            }
+
+            Alert.alert(
+              "Registration Successful",
+              `Username: ${values.username}, Email: ${values.email}`,
+              [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    resetForm();
+                    navigation.navigate("Login");
+                  },
+                },
+              ]
+            );
+          } catch (error) {
+            Alert.alert("Registration Failed", error.message);
+          }
         }}
       >
         {({
@@ -49,22 +74,24 @@ export default function Register() {
           touched,
         }) => (
           <View className="w-full">
-            {/* Name Input */}
             <View className="my-4">
-              <Text className="text-lg mb-2 text-gray-700 text-sm">Name</Text>
+              <Text className="text-lg mb-2 text-gray-700 text-sm">
+                Username
+              </Text>
               <TextInput
                 className="border border-gray-300 p-3 rounded-lg w-full text-gray-800"
-                onChangeText={handleChange("name")}
-                onBlur={handleBlur("name")}
-                value={values.name}
-                placeholder="Enter your name"
+                onChangeText={handleChange("username")}
+                onBlur={handleBlur("username")}
+                value={values.username}
+                placeholder="Enter your username"
               />
-              {touched.name && errors.name ? (
-                <Text className="text-red-500 text-xs mt-1">{errors.name}</Text>
+              {touched.username && errors.username ? (
+                <Text className="text-red-500 text-xs mt-1">
+                  {errors.username}
+                </Text>
               ) : null}
             </View>
 
-            {/* Email Input */}
             <View className="mb-4">
               <Text className="text-lg mb-2 text-gray-700 text-sm">Email</Text>
               <TextInput
@@ -82,7 +109,6 @@ export default function Register() {
               ) : null}
             </View>
 
-            {/* Password Input */}
             <View className="mb-4">
               <Text className="text-lg mb-2 text-gray-700 text-sm">
                 Password
@@ -98,7 +124,7 @@ export default function Register() {
                 />
                 <TouchableOpacity
                   onPress={() => setPasswordVisible(!passwordVisible)}
-                  className="absolute right-3 top-4"
+                  className="absolute right-3 top-3"
                 >
                   <Ionicons
                     name={passwordVisible ? "eye" : "eye-off"}
@@ -114,7 +140,6 @@ export default function Register() {
               ) : null}
             </View>
 
-            {/* Register Button */}
             <View className="mt-4">
               <TouchableOpacity
                 onPress={handleSubmit}
@@ -126,7 +151,6 @@ export default function Register() {
               </TouchableOpacity>
             </View>
 
-            {/* Teks "Sudah punya akun? Masuk" */}
             <View className="mt-5">
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text className="text-blue-500 text-center">

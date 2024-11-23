@@ -4,24 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Formik } from "formik";
 import { loginSchema } from "./validates/form-regis";
 import { useNavigation } from "@react-navigation/native";
-import Toast from "react-native-toast-message"; // Import toast
-
-// Dummy user credentials
-const dummyUser = {
-  username: "user1",
-  password: "useruser1",
-  role: "murid",
-};
-const dummyTeacher = {
-  username: "guru1",
-  password: "guruguru1",
-  role: "guru",
-};
-const dummyAdmin = {
-  username: "admin1",
-  password: "adminadmin1",
-  role: "guru",
-};
+import Toast from "react-native-toast-message";
+import { supabase } from "../client/supabaseClient";
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -29,7 +13,7 @@ export default function Login() {
 
   const showToast = (type, message) => {
     Toast.show({
-      type: type, // 'success' or 'error'
+      type: type,
       position: "top",
       text1: type === "success" ? "Login Successful" : "Login Failed",
       text2: message,
@@ -42,50 +26,55 @@ export default function Login() {
 
   return (
     <View className="flex-1 justify-center items-center bg-white p-5">
-      {/* Back Button */}
       <View className="absolute top-12 left-5">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={30} color="#000" />
         </TouchableOpacity>
       </View>
 
-      <Text className="text-3xl font-bold mb-8 text-gray-800">Login</Text>
+      <Text className="text-3xl font-bold mb-8 text-blue-500">
+        Sign In Page
+      </Text>
 
       <Formik
         initialValues={{ username: "", password: "" }}
         validationSchema={loginSchema}
-        onSubmit={(values, { resetForm }) => {
+        onSubmit={async (values, { resetForm }) => {
           const username = values.username.trim().toLowerCase();
           const password = values.password.trim();
 
-          // Check for dummyUser credentials
-          if (
-            username === dummyUser.username.toLowerCase() &&
-            password === dummyUser.password
-          ) {
-            showToast("success", `Welcome ${dummyUser.username}`);
+          try {
+            const { data, error } = await supabase
+              .from("account")
+              .select("*")
+              .eq("username", username)
+              .single();
+
+            if (error) {
+              showToast("error", "User not found");
+              resetForm();
+              return;
+            }
+
+            if (data.password !== password) {
+              showToast("error", "Invalid password");
+              resetForm();
+              return;
+            }
+
+            showToast("success", `Welcome ${data.username}`);
+
+            if (data.role === "student") {
+              navigation.navigate("Tabs", { userId: data.id });
+            } else if (data.role === "guru") {
+              navigation.navigate("TabGuru", { userId: data.id });
+            } else if (data.role === "admin") {
+              navigation.navigate("TabAdmin", { userId: data.id });
+            }
+
             resetForm();
-            navigation.navigate("Tabs");
-          }
-          // Check for dummyTeacher credentials
-          else if (
-            username === dummyTeacher.username.toLowerCase() &&
-            password === dummyTeacher.password
-          ) {
-            showToast("success", `Welcome ${dummyTeacher.username}`);
-            resetForm();
-            navigation.navigate("TabGuru");
-          } else if (
-            username === dummyAdmin.username.toLowerCase() &&
-            password === dummyAdmin.password
-          ) {
-            showToast("success", `Welcome ${dummyAdmin.username}`);
-            resetForm();
-            navigation.navigate("TabAdmin");
-          }
-          // Invalid credentials
-          else {
-            showToast("error", "Invalid username or password");
+          } catch (error) {
+            showToast("error", error.message);
             resetForm();
           }
         }}
@@ -99,7 +88,6 @@ export default function Login() {
           touched,
         }) => (
           <View className="w-full">
-            {/* Username Input */}
             <View className="my-4">
               <Text className="text-lg mb-2 text-gray-700 text-sm">
                 Username
@@ -118,7 +106,6 @@ export default function Login() {
               ) : null}
             </View>
 
-            {/* Password Input */}
             <View className="mb-4">
               <Text className="text-lg mb-2 text-gray-700 text-sm">
                 Password
@@ -134,7 +121,7 @@ export default function Login() {
                 />
                 <TouchableOpacity
                   onPress={() => setPasswordVisible(!passwordVisible)}
-                  className="absolute right-3 top-4"
+                  className="absolute right-3 top-3"
                 >
                   <Ionicons
                     name={passwordVisible ? "eye" : "eye-off"}
@@ -150,7 +137,6 @@ export default function Login() {
               ) : null}
             </View>
 
-            {/* Login Button */}
             <View className="mt-4">
               <TouchableOpacity
                 onPress={handleSubmit}
@@ -162,7 +148,6 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
-            {/* Navigate to Register */}
             <View className="mt-5">
               <TouchableOpacity onPress={() => navigation.navigate("Register")}>
                 <Text className="text-blue-500 text-center">
