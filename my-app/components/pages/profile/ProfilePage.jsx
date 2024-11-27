@@ -168,11 +168,7 @@ export default function ProfilePage() {
           <Text className="text-sm mb-1 text-gray-700">Tanggal Lahir</Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
-<<<<<<< HEAD
             className="border border-gray-400 p-2 rounded-lg h-12 justify-center w-full"
-=======
-            className="border border-gray-400 p-2 rounded-lg h-12 justify-center"
->>>>>>> 59023703f16bda40da5490813954d82be41856ee
           >
             <Text>{birthDate.toLocaleDateString()}</Text>
           </TouchableOpacity>
