@@ -7,109 +7,59 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons } from "react-native-vector-icons";
-import { FontAwesome } from "react-native-vector-icons";
-import Modal from "react-native-modal"; // Import Modal
 import DetailModal from "./DetailModal";
+import { supabase } from "../../client/supabaseClient";
 
 export default function Table() {
-  const data = [
-    {
-      no: 1,
-      name: "Ahmad",
-      username: "ahmad123",
-      class: "10A",
-      coursesCompleted: 2,
-      totalCourses: 4,
-    },
-    {
-      no: 2,
-      name: "Budi",
-      username: "budi456",
-      class: "10B",
-      coursesCompleted: 3,
-      totalCourses: 4,
-    },
-    {
-      no: 3,
-      name: "Citra",
-      username: "citra789",
-      class: "10A",
-      coursesCompleted: 4,
-      totalCourses: 4,
-    },
-    {
-      no: 4,
-      name: "Dewi",
-      username: "dewi987",
-      class: "10B",
-      coursesCompleted: 2,
-      totalCourses: 4,
-    },
-    {
-      no: 5,
-      name: "Eko",
-      username: "eko654",
-      class: "10C",
-      coursesCompleted: 3,
-      totalCourses: 4,
-    },
-    {
-      no: 6,
-      name: "Fajar",
-      username: "fajar432",
-      class: "10C",
-      coursesCompleted: 4,
-      totalCourses: 4,
-    },
-    {
-      no: 7,
-      name: "Gilang",
-      username: "gilang987",
-      class: "10A",
-      coursesCompleted: 1,
-      totalCourses: 4,
-    },
-    {
-      no: 8,
-      name: "Hana",
-      username: "hana345",
-      class: "10B",
-      coursesCompleted: 2,
-      totalCourses: 4,
-    },
-    {
-      no: 9,
-      name: "Ika",
-      username: "ika123",
-      class: "10C",
-      coursesCompleted: 3,
-      totalCourses: 4,
-    },
-    {
-      no: 10,
-      name: "Joko",
-      username: "joko456",
-      class: "10C",
-      coursesCompleted: 4,
-      totalCourses: 4,
-    },
-    {
-      no: 11,
-      name: "Lia",
-      username: "lia001",
-      class: "10A",
-      coursesCompleted: 3,
-      totalCourses: 4,
-    },
-    {
-      no: 12,
-      name: "Mia",
-      username: "mia002",
-      class: "10A",
-      coursesCompleted: 2,
-      totalCourses: 4,
-    },
-  ];
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expandedClass, setExpandedClass] = useState(null); // Initialize expandedClass state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Step 1: Fetch user_id for role 'student' from the account table
+        const { data: accountData, error: accountError } = await supabase
+          .from("account")
+          .select("id")
+          .eq("role", "student");
+
+        if (accountError) {
+          setError(accountError.message);
+          return;
+        }
+
+        // Extract user_ids from the account data
+        const userIds = accountData.map((account) => account.id);
+
+        if (userIds.length === 0) {
+          setData([]); // No student data
+          return;
+        }
+
+        // Step 2: Use the user_ids to fetch data from the profile table
+        const { data: profileData, error: profileError } = await supabase
+          .from("profile")
+          .select("full_name, age, gender, class, account_id")
+          .in("account_id", userIds); // Filter by user_id
+
+        if (profileError) {
+          setError(profileError.message);
+        } else {
+          setData(profileData);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const groupedData = data.reduce((acc, curr) => {
     if (!acc[curr.class]) {
@@ -126,8 +76,8 @@ export default function Table() {
 
     const filteredData = data.filter(
       (item) =>
-        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.username.toLowerCase().includes(searchText.toLowerCase())
+        item.full_name.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.age.toString().includes(searchText)
     );
 
     useEffect(() => {
@@ -149,7 +99,8 @@ export default function Table() {
     };
 
     return (
-      <View>
+      <View className="mt-5">
+        {/* Search Bar */}
         <View className="flex-row items-center space-x-3 p-3 bg-white border border-gray-300 rounded-lg mb-4">
           <TextInput
             placeholder="Search"
@@ -161,34 +112,34 @@ export default function Table() {
           <TouchableOpacity className="bg-blue-500 p-2 rounded-r-lg">
             <Ionicons name="search" size={20} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity className="bg-green-500 p-2 ml-4 rounded-lg">
-            <FontAwesome name="download" size={20} color="white" />
-          </TouchableOpacity>
         </View>
 
+        {/* Table */}
         <ScrollView horizontal={true}>
           <View className="border border-gray-300 rounded-lg">
-            <View className="flex-row justify-between bg-blue-500 p-3 rounded-t-lg">
-              <Text className="text-white text-center w-16 font-semibold">
+            {/* Header */}
+            <View className="flex-row bg-blue-500 p-3 rounded-t-lg">
+              <Text className="text-white text-center w-10 font-semibold">
                 No
               </Text>
-              <Text className="text-white text-center w-48 font-semibold">
-                Nama Peserta Didik
+              <Text className="text-white text-center w-60 font-semibold">
+                Full Name
               </Text>
-              <Text className="text-white text-center w-48 font-semibold">
-                Username
+              <Text className="text-white text-center w-12 font-semibold">
+                Age
               </Text>
-              <Text className="text-white text-center w-24 font-semibold">
-                Kelas
+              <Text className="text-white text-center w-36 font-semibold">
+                Gender
               </Text>
-              <Text className="text-white text-center w-32 font-semibold">
-                Course Selesai
+              <Text className="text-white text-center w-36 font-semibold">
+                Class
               </Text>
-              <Text className="text-white text-center w-32 font-semibold">
+              <Text className="text-white text-center font-semibold">
                 Action
               </Text>
             </View>
 
+            {/* Data Rows */}
             {currentItems.map((item, index) => (
               <View
                 key={index}
@@ -196,11 +147,11 @@ export default function Table() {
                   index % 2 === 0 ? "bg-gray-100" : "bg-white"
                 } border-b border-gray-300`}
               >
-                <Text className="text-center w-16">{index + 1}</Text>
-                <Text className="text-center w-48">{item.name}</Text>
-                <Text className="text-center w-48">{item.username}</Text>
-                <Text className="text-center w-24">{item.class}</Text>
-                <Text className="text-center w-32">{`${item.coursesCompleted}/${item.totalCourses}`}</Text>
+                <Text className="text-center w-10">{index + 1}</Text>
+                <Text className="text-center w-60">{item.full_name}</Text>
+                <Text className="text-center w-12">{item.age}</Text>
+                <Text className="text-center w-36">{item.gender}</Text>
+                <Text className="text-center w-36">{item.class}</Text>
                 <View className="flex-row space-x-2">
                   <TouchableOpacity
                     className="bg-blue-500 p-2 rounded-md"
@@ -208,24 +159,13 @@ export default function Table() {
                   >
                     <Ionicons name="eye" size={16} color="white" />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    className="bg-yellow-500 p-2 rounded-md"
-                    onPress={() => console.log("Pindah Kelas", item)}
-                  >
-                    <Ionicons name="swap-horizontal" size={16} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="bg-red-500 p-2 rounded-md"
-                    onPress={() => console.log("Delete", item)}
-                  >
-                    <FontAwesome name="trash" size={16} color="white" />
-                  </TouchableOpacity>
                 </View>
               </View>
             ))}
           </View>
         </ScrollView>
 
+        {/* Pagination */}
         {filteredData.length > itemsPerPage && (
           <View className="flex-row justify-between p-3">
             <TouchableOpacity
@@ -253,22 +193,19 @@ export default function Table() {
     );
   };
 
-  const [expandedClass, setExpandedClass] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false); // State to control the modal visibility
-  const [selectedItem, setSelectedItem] = useState(null); // State to store the selected item for the modal
-
   const openModal = (item) => {
-    setSelectedItem(item); // Set the selected item when the button is pressed
-    setModalVisible(true); // Show the modal
+    setSelectedItem(item);
+    setModalVisible(true);
   };
 
   const closeModal = () => {
-    setModalVisible(false); // Close the modal
-    setSelectedItem(null); // Clear the selected item
+    setModalVisible(false);
+    setSelectedItem(null);
   };
 
   return (
     <View className="flex-1 bg-gray-100">
+      {/* Header */}
       <View className="bg-white pt-10 pb-3 px-5 flex justify-center items-start shadow-lg fixed top-0 left-0 right-0 z-10">
         <Text className="text-blue-500 text-lg font-bold">Student Data</Text>
       </View>
@@ -276,6 +213,7 @@ export default function Table() {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, padding: 10, paddingTop: 25 }}
       >
+        {/* Grouped Data by Class */}
         {Object.keys(groupedData).map((classKey) => (
           <View
             key={classKey}
@@ -285,15 +223,10 @@ export default function Table() {
               onPress={() =>
                 setExpandedClass(expandedClass === classKey ? null : classKey)
               }
-              className="flex-row justify-between items-center mb-4"
             >
-              <Text className="text-xl font-semibold">Kelas {classKey}</Text>
-              <Ionicons
-                name={
-                  expandedClass === classKey ? "chevron-up" : "chevron-down"
-                }
-                size={20}
-              />
+              <Text className="text-lg font-semibold text-blue-500">
+                {classKey}
+              </Text>
             </TouchableOpacity>
 
             {expandedClass === classKey && (
@@ -303,12 +236,14 @@ export default function Table() {
         ))}
       </ScrollView>
 
-      {/* Modal for displaying detailed item */}
-      <DetailModal
-        isVisible={modalVisible}
-        selectedItem={selectedItem}
-        closeModal={closeModal}
-      />
+      {/* Modal */}
+      {modalVisible && (
+        <DetailModal
+          visible={modalVisible}
+          onClose={closeModal}
+          item={selectedItem}
+        />
+      )}
     </View>
   );
 }

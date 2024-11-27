@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Image, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { supabase } from "../../client/supabaseClient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
@@ -10,7 +17,11 @@ export default function HomePage() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [courses, setCourses] = useState([]); // State untuk menyimpan data kursus
 
+  const navigation = useNavigation();
+
+  // Fungsi untuk mengambil data user
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -37,7 +48,28 @@ export default function HomePage() {
     fetchUserData();
   }, [userId]);
 
-  const navigation = useNavigation();
+  // Fungsi untuk mengambil data kursus
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.from("card_course").select("*"); // Ambil semua data dari tabel card_course
+
+        if (error) {
+          throw error;
+        }
+
+        setCourses(data); // Menyimpan data kursus yang di-fetch
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching courses data:", error.message);
+        setError("Error fetching courses data. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []); // Hanya dipanggil sekali saat komponen dimuat
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -71,42 +103,51 @@ export default function HomePage() {
           <View className="border-b border-gray-400 mb-4"></View>
 
           <Text className="text-xl font-semibold text-gray-800 mb-4">
-            Passed Courses
+            Recommended Courses
           </Text>
-
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row space-x-4">
-              <View className="bg-white p-4 rounded-lg shadow-md w-60">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Course 1
-                </Text>
-                <Text className="text-gray-600">Description of course 1.</Text>
-                <Text className="text-blue-500 mt-2">View Details</Text>
-              </View>
-
-              <View className="bg-white p-4 rounded-lg shadow-md w-60">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Course 2
-                </Text>
-                <Text className="text-gray-600">Description of course 2.</Text>
-                <Text className="text-blue-500 mt-2">View Details</Text>
-              </View>
-
-              <View className="bg-white p-4 rounded-lg shadow-md w-60">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Course 3
-                </Text>
-                <Text className="text-gray-600">Description of course 3.</Text>
-                <Text className="text-blue-500 mt-2">View Details</Text>
-              </View>
-
-              <View className="bg-white p-4 rounded-lg shadow-md w-60">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Course 4
-                </Text>
-                <Text className="text-gray-600">Description of course 4.</Text>
-                <Text className="text-blue-500 mt-2">View Details</Text>
-              </View>
+              {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+              ) : error ? (
+                <Text className="text-red-500">{error}</Text>
+              ) : (
+                courses.map((course) => (
+                  <TouchableOpacity
+                    key={course.id_card}
+                    className="bg-white p-4 rounded-lg shadow-md w-60"
+                    onPress={() => {
+                      if (course.id_card === 1) {
+                        navigation.navigate("FactOrHoax", {
+                          courseId: course.id_card,
+                        });
+                      } else if (course.id_card === 2) {
+                        navigation.navigate("PassCourse", {
+                          courseId: course.id_card,
+                        });
+                      } else if (course.id_card === 3) {
+                        navigation.navigate("PersonalAndPublic", {
+                          courseId: course.id_card,
+                        });
+                      } else {
+                        navigation.navigate("CourseDetail", {
+                          courseId: course.id_card,
+                        });
+                      }
+                    }}
+                  >
+                    <Text className="text-lg font-bold text-gray-800 mb-2">
+                      {course.course_title}
+                    </Text>
+                    <Text className="text-gray-600 text-xs text-justify mb-4">
+                      {course.course_description}
+                    </Text>
+                    <Text className="text-blue-600 text-sm font-medium">
+                      View Details
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           </ScrollView>
 
@@ -126,33 +167,6 @@ export default function HomePage() {
               </Text>
               <Text className="text-gray-600">4.5/5 based on 20 ratings</Text>
             </View>
-          </View>
-
-          <View className="mt-6">
-            <Text className="text-xl font-semibold text-gray-800 mb-4">
-              Recommended Courses
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex-row space-x-4">
-                <View className="bg-white p-4 rounded-lg shadow-md w-60">
-                  <Text className="text-lg font-semibold text-gray-800">
-                    Course A
-                  </Text>
-                  <Text className="text-gray-600">
-                    Description of course A.
-                  </Text>
-                </View>
-
-                <View className="bg-white p-4 rounded-lg shadow-md w-60">
-                  <Text className="text-lg font-semibold text-gray-800">
-                    Course B
-                  </Text>
-                  <Text className="text-gray-600">
-                    Description of course B.
-                  </Text>
-                </View>
-              </View>
-            </ScrollView>
           </View>
         </View>
       </ScrollView>

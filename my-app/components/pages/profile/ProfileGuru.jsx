@@ -164,11 +164,11 @@ export default function ProfileGuru() {
           />
         </View>
 
-        <View className="mb-4 items-center">
+        <View className="mb-4">
           <Text className="text-sm mb-1 text-gray-700">Tanggal Lahir</Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
-            className="border border-gray-400 p-2 rounded-lg h-12 justify-center items-center"
+            className="border border-gray-400 p-2 rounded-lg h-12 justify-center w-full"
           >
             <Text>{birthDate.toLocaleDateString()}</Text>
           </TouchableOpacity>
