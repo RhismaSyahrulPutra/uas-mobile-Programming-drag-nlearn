@@ -20,6 +20,7 @@ export default function HomeGuru() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [courses, setCourses] = useState([]);
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -47,6 +48,28 @@ export default function HomeGuru() {
 
     fetchUsername();
   }, [userId]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.from("card_course").select("*");
+
+        if (error) {
+          throw error;
+        }
+
+        setCourses(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching courses data:", error.message);
+        setError("Error fetching courses data. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -82,23 +105,49 @@ export default function HomeGuru() {
           <Text className="text-xl font-semibold text-gray-800 mb-4">
             Active Course
           </Text>
-
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row space-x-4">
-              {[1, 2, 3, 4].map((num) => (
-                <View
-                  key={num}
-                  className="bg-white p-4 rounded-lg shadow-md w-60"
-                >
-                  <Text className="text-lg font-semibold text-gray-800">
-                    Course {num}
-                  </Text>
-                  <Text className="text-gray-600">
-                    Description of course {num}.
-                  </Text>
-                  <Text className="text-blue-500 mt-2">View Details</Text>
-                </View>
-              ))}
+              {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+              ) : error ? (
+                <Text className="text-red-500">{error}</Text>
+              ) : (
+                courses.map((course) => (
+                  <TouchableOpacity
+                    key={course.id_card}
+                    className="bg-white p-4 rounded-lg shadow-md w-60"
+                    onPress={() => {
+                      if (course.id_card === 1) {
+                        navigation.navigate("FactOrHoax", {
+                          courseId: course.id_card,
+                        });
+                      } else if (course.id_card === 2) {
+                        navigation.navigate("PassCourse", {
+                          courseId: course.id_card,
+                        });
+                      } else if (course.id_card === 3) {
+                        navigation.navigate("PersonalAndPublic", {
+                          courseId: course.id_card,
+                        });
+                      } else {
+                        navigation.navigate("CourseDetail", {
+                          courseId: course.id_card,
+                        });
+                      }
+                    }}
+                  >
+                    <Text className="text-lg font-bold text-gray-800 mb-2">
+                      {course.course_title}
+                    </Text>
+                    <Text className="text-gray-600 text-xs text-justify mb-4">
+                      {course.course_description}
+                    </Text>
+                    <Text className="text-blue-600 text-sm font-medium">
+                      View Details
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           </ScrollView>
 

@@ -90,7 +90,7 @@ export default function CoursePage() {
         {/* Menampilkan "Coming Soon" setelah semua data selesai */}
         <View className="p-5 mb-5 bg-white rounded-lg shadow-md">
           <Image
-            source={{ uri: "https://via.placeholder.com/150" }}
+            source={require("../../../assets/comingSoon.png")}
             className="w-full h-40 object-cover rounded-md mb-3"
           />
           <Text className="text-lg font-bold text-gray-800 mb-3">
