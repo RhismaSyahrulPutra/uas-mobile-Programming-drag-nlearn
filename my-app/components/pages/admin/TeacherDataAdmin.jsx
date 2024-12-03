@@ -119,6 +119,12 @@ export default function TeacherDataAdmin() {
     }
   };
 
+  const handleDelete = (item) => {
+    // Show confirmation modal
+    setSelectedItem(item);
+    setModalDeleteVisible(true);
+  };
+
   const confirmDelete = async () => {
     if (!selectedItem) return;
 
