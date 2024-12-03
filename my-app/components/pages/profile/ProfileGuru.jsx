@@ -60,14 +60,14 @@ export default function ProfileGuru() {
             const birthDateObject = new Date(profileData.birth_date);
             setBirthDate(birthDateObject);
 
-            const ageDiff =
-              new Date().getFullYear() - birthDateObject.getFullYear();
+            let ageDiff =
+              new Date().getFullYear() - birthDateObject.getFullYear(); // Change `const` to `let`
             const m = new Date().getMonth() - birthDateObject.getMonth();
             if (
               m < 0 ||
               (m === 0 && new Date().getDate() < birthDateObject.getDate())
             ) {
-              ageDiff--;
+              ageDiff--; // Modify ageDiff
             }
             setAge(ageDiff);
           } else {
@@ -92,10 +92,10 @@ export default function ProfileGuru() {
     setShowDatePicker(false);
     setBirthDate(currentDate);
 
-    const ageDiff = new Date().getFullYear() - currentDate.getFullYear();
+    let ageDiff = new Date().getFullYear() - currentDate.getFullYear(); // Change `const` to `let`
     const m = new Date().getMonth() - currentDate.getMonth();
     if (m < 0 || (m === 0 && new Date().getDate() < currentDate.getDate())) {
-      ageDiff--;
+      ageDiff--; // Modify `ageDiff`
     }
     setAge(ageDiff);
   };
