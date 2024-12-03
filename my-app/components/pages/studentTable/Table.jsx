@@ -237,11 +237,12 @@ export default function Table() {
       </ScrollView>
 
       {/* Modal */}
-      {modalVisible && (
+      {modalVisible && selectedItem && (
         <DetailModal
           visible={modalVisible}
           onClose={closeModal}
-          item={selectedItem}
+          accountId={selectedItem.account_id} // Kirim account_id ke modal
+          item={selectedItem} // Kirim seluruh data yang relevan
         />
       )}
     </View>

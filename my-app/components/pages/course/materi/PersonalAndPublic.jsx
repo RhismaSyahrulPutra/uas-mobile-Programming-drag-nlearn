@@ -1,14 +1,42 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import React from "react";
-import Icon from "react-native-vector-icons/Ionicons"; // Import the icon library
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { supabase } from "../../../client/supabaseClient";
 
 export default function PersonalAndPublic() {
-  const navigation = useNavigation(); // Get navigation object
+  const navigation = useNavigation();
+  const route = useRoute();
 
-  // Function to handle back navigation
+  const [informationData, setInformationData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInformationData = async () => {
+      try {
+        const { data, error } = await supabase.from("information").select("*");
+
+        if (error) throw error;
+
+        setInformationData(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching information data: ", error);
+        setLoading(false);
+      }
+    };
+
+    fetchInformationData();
+  }, []);
+
   const handleBackPress = () => {
-    navigation.goBack(); // Navigate to the previous screen
+    navigation.goBack();
   };
 
   const handlePlayGamePress = () => {
@@ -17,79 +45,81 @@ export default function PersonalAndPublic() {
 
   return (
     <View className="flex-1 bg-gray-100">
+      {/* Header Bar */}
       <View className="bg-white pt-10 pb-3 px-5 flex-row items-center shadow-lg fixed top-0 left-0 right-0 z-10">
         {/* Back Button */}
         <TouchableOpacity onPress={handleBackPress}>
           <Icon name="arrow-back" size={24} color="#007BFF" />
         </TouchableOpacity>
-
         <Text className="text-blue-500 text-lg font-bold ml-3">
           Materi Pembelajaran
         </Text>
       </View>
 
+      {/* Scrollable Content */}
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Dummy Header */}
         <View className="p-5">
-          <Text className="text-2xl font-bold mb-4">Judul Konten</Text>
-          <Text className="text-gray-700 mb-2">
-            Ini adalah paragraf dummy pertama. Anda dapat menambahkan lebih
-            banyak teks di sini untuk menggambarkan materi pembelajaran.
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            Paragraf kedua menjelaskan lebih lanjut tentang topik ini dan
-            memberikan beberapa informasi tambahan. Misalnya, menjelaskan
-            pentingnya pemahaman tentang topik ini dalam konteks pembelajaran.
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            Paragraf ketiga dapat berisi informasi tambahan, contoh, atau
-            pertanyaan untuk merangsang pemikiran pembaca.
-          </Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#007BFF" />
+          ) : (
+            <>
+              {informationData.length > 0 ? (
+                informationData.map((info, index) => (
+                  <View key={index} className="mb-6">
+                    <Text className="text-2xl font-bold mb-4">
+                      {info.category}
+                    </Text>
+                    <Text className="text-gray-700 mb-4 text-justify">
+                      {info.description}
+                    </Text>
 
-          {/* New Content Sections */}
-          <Text className="text-xl font-semibold mt-6 mb-2">Poin Penting</Text>
-          <Text className="text-gray-700 mb-2">
-            - Pentingnya kolaborasi dalam belajar.
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            - Keterampilan komunikasi yang baik.
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            - Metode belajar yang efektif untuk pemahaman yang lebih dalam.
-          </Text>
+                    <Text className="text-xl font-semibold mb-2">
+                      Karakteristik
+                    </Text>
+                    {info.characteristics && info.characteristics.length > 0 ? (
+                      <View className="pl-4 mb-4">
+                        {info.characteristics.map((item, index) => (
+                          <Text
+                            key={index}
+                            className="text-gray-700 mb-1 text-justify"
+                          >
+                            - {item}
+                          </Text>
+                        ))}
+                      </View>
+                    ) : null}
 
-          <Text className="text-xl font-semibold mt-6 mb-2">
-            Contoh Penerapan
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            Contoh: Dalam sebuah kelompok belajar, siswa dapat berbagi
-            pengetahuan dan saling membantu untuk memahami materi yang sulit.
-            Ini menciptakan lingkungan yang mendukung dan kolaboratif.
-          </Text>
+                    <Text className="text-xl font-semibold mb-2">Contoh</Text>
+                    {info.examples && info.examples.length > 0 ? (
+                      <View className="pl-4 mb-4">
+                        {info.examples.map((example, index) => (
+                          <Text
+                            key={index}
+                            className="text-gray-700 mb-1 text-justify"
+                          >
+                            - {example}
+                          </Text>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
+                ))
+              ) : (
+                <Text className="text-center text-gray-500">
+                  No data available
+                </Text>
+              )}
 
-          <Text className="text-xl font-semibold mt-6 mb-2">
-            Pertanyaan Diskusi
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            1. Apa tantangan terbesar yang Anda hadapi dalam belajar secara
-            kolaboratif?
-          </Text>
-          <Text className="text-gray-700 mb-2">
-            2. Bagaimana Anda dapat meningkatkan keterampilan komunikasi Anda
-            dalam kelompok?
-          </Text>
-
-          <Text className="text-gray-700 mb-2">
-            Diskusikan pertanyaan-pertanyaan ini dengan teman sekelas Anda dan
-            bagikan pengalaman serta strategi yang efektif.
-          </Text>
-
-          <TouchableOpacity
-            className="mt-8 bg-blue-500 py-3 px-6 rounded-full"
-            onPress={handlePlayGamePress}
-          >
-            <Text className="text-white text-center text-md">Bermain Game</Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                className="mt-8 bg-blue-500 py-3 px-6 rounded-full"
+                onPress={handlePlayGamePress}
+              >
+                <Text className="text-white text-center text-md">
+                  Bermain Game
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </ScrollView>
     </View>
