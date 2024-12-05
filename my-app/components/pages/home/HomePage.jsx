@@ -17,49 +17,71 @@ export default function HomePage() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [courses, setCourses] = useState([]); // State untuk menyimpan data kursus
+  const [courses, setCourses] = useState([]);
+  const [profileImage, setProfileImage] = useState("");
 
   const navigation = useNavigation();
 
-  // Fungsi untuk mengambil data user
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchAccount = async () => {
       try {
         setLoading(true);
         const { data, error } = await supabase
           .from("account")
           .select("username")
           .eq("id", userId)
-          .single();
+          .single(); // Ambil 1 data sesuai `userId`.
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
+        // Set username dari tabel account
         setUsername(data.username);
-        setLoading(false);
       } catch (error) {
-        console.error("Error fetching user data:", error.message);
-        setError("Error fetching user data. Please try again later.");
+        console.error("Error fetching account data:", error.message);
+        setError("Error fetching account data. Please try again.");
+      }
+    };
+
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profile")
+          .select("profile_image")
+          .eq("account_id", userId)
+          .single(); // Ambil 1 data sesuai `account_id`.
+
+        if (error) throw error;
+
+        // Set profile_image dari tabel profile
+        setProfileImage(data.profile_image || ""); // Jika null, gunakan default kosong
+      } catch (error) {
+        console.error("Error fetching profile data:", error.message);
+        setError("Error fetching profile data. Please try again.");
+      }
+    };
+
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchAccount(), fetchProfile()]);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchUserData();
+    fetchData();
   }, [userId]);
 
-  // Fungsi untuk mengambil data kursus
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase.from("card_course").select("*"); // Ambil semua data dari tabel card_course
+        const { data, error } = await supabase.from("card_course").select("*");
 
         if (error) {
           throw error;
         }
 
-        setCourses(data); // Menyimpan data kursus yang di-fetch
+        setCourses(data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching courses data:", error.message);
@@ -69,7 +91,7 @@ export default function HomePage() {
     };
 
     fetchCourses();
-  }, []); // Hanya dipanggil sekali saat komponen dimuat
+  }, []);
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -82,7 +104,9 @@ export default function HomePage() {
           <View className="flex-row items-center justify-between mb-6">
             <View className="flex-row items-center">
               <Image
-                source={{ uri: "https://via.placeholder.com/50" }}
+                source={{
+                  uri: profileImage || "https://via.placeholder.com/50",
+                }}
                 className="rounded-full w-12 h-12 mr-4"
               />
               <View>

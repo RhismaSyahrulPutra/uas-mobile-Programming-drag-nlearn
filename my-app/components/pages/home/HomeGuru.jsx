@@ -21,32 +21,57 @@ export default function HomeGuru() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [courses, setCourses] = useState([]);
+  const [profileImage, setProfileImage] = useState("");
 
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const fetchUsername = async () => {
+    const fetchAccount = async () => {
       try {
         setLoading(true);
         const { data, error } = await supabase
           .from("account")
           .select("username")
           .eq("id", userId)
-          .single();
+          .single(); // Ambil 1 data sesuai `userId`.
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
+        // Set username dari tabel account
         setUsername(data.username);
       } catch (error) {
-        setError("Error fetching username. Please try again.");
+        console.error("Error fetching account data:", error.message);
+        setError("Error fetching account data. Please try again.");
+      }
+    };
+
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profile")
+          .select("profile_image")
+          .eq("account_id", userId)
+          .single(); // Ambil 1 data sesuai `account_id`.
+
+        if (error) throw error;
+
+        // Set profile_image dari tabel profile
+        setProfileImage(data.profile_image || ""); // Jika null, gunakan default kosong
+      } catch (error) {
+        console.error("Error fetching profile data:", error.message);
+        setError("Error fetching profile data. Please try again.");
+      }
+    };
+
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchAccount(), fetchProfile()]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsername();
+    fetchData();
   }, [userId]);
 
   useEffect(() => {
@@ -82,9 +107,12 @@ export default function HomeGuru() {
           <View className="flex-row items-center justify-between mb-6">
             <View className="flex-row items-center">
               <Image
-                source={{ uri: "https://via.placeholder.com/50" }}
+                source={{
+                  uri: profileImage || "https://via.placeholder.com/50",
+                }}
                 className="rounded-full w-12 h-12 mr-4"
               />
+
               <View>
                 {loading ? (
                   <ActivityIndicator size="small" color="#0000ff" />

@@ -12,6 +12,7 @@ import { Picker } from "@react-native-picker/picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { supabase } from "../../client/supabaseClient";
+import * as ImagePicker from "expo-image-picker";
 
 export default function ProfilePage() {
   const [fullName, setFullName] = useState("");
@@ -61,17 +62,15 @@ export default function ProfilePage() {
             setBirthDate(birthDateObject);
 
             let ageDiff =
-              new Date().getFullYear() - birthDateObject.getFullYear(); // Change `const` to `let`
+              new Date().getFullYear() - birthDateObject.getFullYear();
             const m = new Date().getMonth() - birthDateObject.getMonth();
             if (
               m < 0 ||
               (m === 0 && new Date().getDate() < birthDateObject.getDate())
             ) {
-              ageDiff--; // Modify ageDiff
+              ageDiff--;
             }
             setAge(ageDiff);
-          } else {
-            console.error("Invalid birth_date format:", profileData.birth_date);
           }
         }
       } catch (err) {
@@ -98,6 +97,56 @@ export default function ProfilePage() {
       ageDiff--;
     }
     setAge(ageDiff);
+  };
+
+  const handleImagePicker = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "Camera roll permissions are required.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      const imageName = `${Date.now()}.jpg`;
+
+      const { data, error } = await supabase.storage
+        .from("assets&image")
+        .upload(imageName, {
+          uri: imageUri,
+          type: "image/jpeg",
+          name: imageName,
+        });
+
+      if (error) {
+        console.error("Error uploading image:", error);
+        Alert.alert("Error", "Failed to upload image");
+      } else {
+        const publicURL = supabase.storage
+          .from("assets&image")
+          .getPublicUrl(imageName).data.publicUrl;
+
+        setProfileImage(publicURL);
+
+        const { error: updateError } = await supabase
+          .from("profile")
+          .update({ profile_image: publicURL })
+          .eq("account_id", userId);
+
+        if (updateError) {
+          console.error("Error updating profile image:", updateError);
+          Alert.alert("Error", "Failed to update profile image");
+        } else {
+          Alert.alert("Success", "Profile image updated successfully");
+        }
+      }
+    }
   };
 
   const updateProfileAndAccount = async () => {
@@ -144,14 +193,19 @@ export default function ProfilePage() {
         showsVerticalScrollIndicator={false}
       >
         <View className="flex items-center mb-4">
-          <Image
-            source={
-              profileImage
-                ? { uri: profileImage }
-                : { uri: "https://via.placeholder.com/150" }
-            }
-            className="w-24 h-24 rounded-full border-4 border-gray-300"
-          />
+          <TouchableOpacity onPress={handleImagePicker}>
+            <Image
+              source={
+                profileImage
+                  ? { uri: profileImage }
+                  : { uri: "https://via.placeholder.com/150" }
+              }
+              className="w-24 h-24 rounded-full border-4 border-gray-300"
+            />
+          </TouchableOpacity>
+          <Text className="text-sm text-gray-700 mt-2">
+            Edit Profile Picture
+          </Text>
         </View>
 
         <View className="mb-4">

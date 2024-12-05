@@ -50,7 +50,9 @@ export default function StudentDataAdmin() {
         // Step 2: Use the user_ids to fetch data from the profile table
         const { data: profileData, error: profileError } = await supabase
           .from("profile")
-          .select("full_name, age, gender, class, account_id")
+          .select(
+            "profile_image, birth_date, full_name, age, gender, class, account_id"
+          )
           .in("account_id", userIds);
 
         if (profileError) {

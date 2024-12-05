@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import Modal from "react-native-modal"; // Import react-native-modal
+import Modal from "react-native-modal";
 
 export default function DetailModal({ visible, onClose, item }) {
   const {
-    profile_image = "https://via.placeholder.com/150", // Fallback image
+    profile_image = "https://via.placeholder.com/150",
     full_name = "-",
     birth_date = "-",
     age = "-",
@@ -12,6 +12,12 @@ export default function DetailModal({ visible, onClose, item }) {
     class: userClass = "-",
     achievement = "-",
   } = item || {};
+
+  const formatDate = (date) => {
+    if (!date || isNaN(Date.parse(date))) return "-";
+    const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+    return new Intl.DateTimeFormat("id-ID", options).format(new Date(date));
+  };
 
   return (
     <Modal
@@ -33,9 +39,11 @@ export default function DetailModal({ visible, onClose, item }) {
         {/* Informasi Detail */}
         <Text className="text-lg font-bold mb-2 text-center">{full_name}</Text>
         <View className="space-y-2">
-          <Text className="text-sm">Tanggal Lahir: {birth_date}</Text>
+          <Text className="text-sm">
+            Tanggal Lahir: {formatDate(birth_date)}
+          </Text>
           <Text className="text-sm">Umur: {age}</Text>
-          <Text className="text-sm">jenis kelamin: {gender}</Text>
+          <Text className="text-sm">Jenis Kelamin: {gender}</Text>
           <Text className="text-sm">Kelas: {userClass}</Text>
           <Text className="text-sm">Achievement: {achievement}</Text>
         </View>

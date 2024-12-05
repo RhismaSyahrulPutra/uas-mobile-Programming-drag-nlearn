@@ -13,6 +13,12 @@ export default function DetailTableStudent({ visible, onClose, item }) {
     achievement = "-",
   } = item || {};
 
+  const formatDate = (date) => {
+    if (!date || isNaN(Date.parse(date))) return "-";
+    const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+    return new Intl.DateTimeFormat("id-ID", options).format(new Date(date));
+  };
+
   return (
     <Modal
       isVisible={visible}
@@ -33,7 +39,9 @@ export default function DetailTableStudent({ visible, onClose, item }) {
         {/* Informasi Detail */}
         <Text className="text-lg font-bold mb-2 text-center">{full_name}</Text>
         <View className="space-y-2">
-          <Text className="text-sm">Tanggal Lahir: {birth_date}</Text>
+          <Text className="text-sm">
+            Tanggal Lahir: {formatDate(birth_date)}
+          </Text>
           <Text className="text-sm">Umur: {age}</Text>
           <Text className="text-sm">jenis kelamin: {gender}</Text>
           <Text className="text-sm">Kelas: {userClass}</Text>

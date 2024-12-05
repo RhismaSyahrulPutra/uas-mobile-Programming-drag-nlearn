@@ -19,38 +19,54 @@ export default function Table() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAccounts = async () => {
       try {
-        // Step 1: Fetch user_id for role 'student' from the account table
         const { data: accountData, error: accountError } = await supabase
           .from("account")
           .select("id")
           .eq("role", "student");
 
-        if (accountError) {
-          setError(accountError.message);
-          return;
-        }
+        if (accountError) throw accountError;
 
-        // Extract user_ids from the account data
-        const userIds = accountData.map((account) => account.id);
+        return accountData.map((account) => account.id);
+      } catch (error) {
+        console.error("Error fetching accounts:", error.message);
+        setError("Failed to fetch account data.");
+        return [];
+      }
+    };
 
-        if (userIds.length === 0) {
-          setData([]); // No student data
-          return;
-        }
+    const fetchProfiles = async (userIds) => {
+      try {
+        if (userIds.length === 0) return [];
 
-        // Step 2: Use the user_ids to fetch data from the profile table
         const { data: profileData, error: profileError } = await supabase
           .from("profile")
-          .select("full_name, age, gender, class, account_id")
-          .in("account_id", userIds); // Filter by user_id
+          .select(
+            "profile_image, birth_date, full_name, age, gender, class, account_id"
+          )
+          .in("account_id", userIds);
 
-        if (profileError) {
-          setError(profileError.message);
-        } else {
-          setData(profileData);
-        }
+        if (profileError) throw profileError;
+
+        return profileData;
+      } catch (error) {
+        console.error("Error fetching profiles:", error.message);
+        setError("Failed to fetch profile data.");
+        return [];
+      }
+    };
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch account IDs
+        const userIds = await fetchAccounts();
+
+        // Fetch profile data based on account IDs
+        const profileData = await fetchProfiles(userIds);
+
+        setData(profileData);
       } catch (err) {
         setError(err.message);
       } finally {
