@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons"; // Import the icon library
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import DraggableFlatList from "react-native-draggable-flatlist";
+import { WebView } from "react-native-webview";
 
 export default function PassCourseGame() {
   const navigation = useNavigation(); // Get navigation object
@@ -11,15 +12,6 @@ export default function PassCourseGame() {
   const handleBackPress = () => {
     navigation.goBack(); // Navigate to the previous screen
   };
-
-  // Sample sentences for the drag-and-drop list
-  const [data, setData] = useState([
-    { key: "1", sentence: "This is a fact." },
-    { key: "2", sentence: "This is a hoax." },
-    { key: "3", sentence: "Cats can fly." },
-    { key: "4", sentence: "The Earth is round." },
-    { key: "5", sentence: "Water is wet." },
-  ]);
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -32,20 +24,15 @@ export default function PassCourseGame() {
         <Text className="text-blue-500 text-lg font-bold ml-3">Game</Text>
       </View>
 
-      <DraggableFlatList
-        data={data}
-        onDragEnd={({ data }) => setData(data)} // Update state when drag ends
-        keyExtractor={(item) => item.key}
-        renderItem={({ item, drag, isActive }) => (
-          <TouchableOpacity
-            onLongPress={drag} // Trigger drag on long press
-            className={`p-5 my-2 mx-2 bg-white rounded-lg border border-gray-300 shadow-md ${
-              isActive ? "bg-gray-200" : ""
-            }`}
-          >
-            <Text className="text-base">{item.sentence}</Text>
-          </TouchableOpacity>
-        )}
+      <WebView
+        source={{
+          uri: "https://wordwall.net/embed/0e19543343e54895aeeaf8ef57a69062?themeId=1&templateId=36&fontStackId=0",
+        }}
+        style={{ flex: 1, marginTop: 10 }}
+        scalesPageToFit={true}
+        startInLoadingState={true} // Menampilkan indikator loading
+        javaScriptEnabled={true} // Mengaktifkan JavaScript
+        domStorageEnabled={true} // Mengaktifkan penyimpanan DOM
       />
     </View>
   );

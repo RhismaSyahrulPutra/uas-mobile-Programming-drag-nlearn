@@ -1,14 +1,8 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import DragAndDrop from "volkeno-react-native-drag-drop"; // Import DragAndDrop component
-import Icon from "react-native-vector-icons/Ionicons"; // Import the icon library
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons"; // Import icon library
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { WebView } from "react-native-webview"; // Import WebView for iframe rendering
 
 export default function FactOrHoaxGame() {
   const navigation = useNavigation(); // Get navigation object
@@ -17,25 +11,6 @@ export default function FactOrHoaxGame() {
   const handleBackPress = () => {
     navigation.goBack(); // Navigate to the previous screen
   };
-
-  const [items, setItems] = React.useState([
-    { id: 1, text: "Air mengandung hidrogen dan oksigen." }, // Fakta
-    { id: 2, text: "Menonton TV dapat membuat kamu lebih pintar." }, // Opini
-    { id: 3, text: "Bumi datar dan bukan bulat." }, // Hoax
-    { id: 4, text: "Kucing adalah hewan peliharaan yang sangat popular." }, // Fakta
-    { id: 5, text: "Semua orang harus menjadi vegetarian untuk hidup sehat." }, // Opini
-    { id: 6, text: "Vaksin menyebabkan autisme." }, // Hoax
-    { id: 7, text: "Makanan pedas dapat mempercepat metabolisme." }, // Fakta
-    { id: 8, text: "Jika kamu menyentuh katak, kamu akan sakit." }, // Hoax
-    { id: 9, text: "Olahraga setiap hari sangat baik untuk kesehatan." }, // Fakta
-    { id: 10, text: "Mendengarkan musik klasik membuat kamu lebih cerdas." }, // Opini
-  ]);
-
-  const [zones, setZones] = React.useState([
-    { id: 1, text: "Fakta", items: [] },
-    { id: 2, text: "Opini", items: [] },
-    { id: 3, text: "Hoax", items: [] },
-  ]);
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -48,85 +23,48 @@ export default function FactOrHoaxGame() {
           Drag and Drop Game
         </Text>
       </View>
-
-      <ScrollView>
-        <View style={styles.dragDropContainer}>
-          <DragAndDrop
-            style={styles.container}
-            contentContainerStyle={styles.contentContainerStyle}
-            itemKeyExtractor={(item) => item.id.toString()}
-            zoneKeyExtractor={(zone) => zone.id.toString()}
-            zones={zones}
-            items={items}
-            onMaj={(zones, items) => {
-              setItems(items);
-              setZones(zones);
-            }}
-            itemsInZoneDisplay="column" // Set items in zone to display in a column
-            itemsDisplay="column" // Set items to display in a column
-            itemsNumColumns={1} // Display 1 item per row
-            itemsInZoneNumColumns={1}
-            renderItem={(item) => (
-              <View style={styles.dragItemStyle}>
-                <Text style={styles.dragItemTextStyle}>{item.text}</Text>
-              </View>
-            )} // Display 1 item per zone
-            renderZone={(zone, children, hover) => (
-              <View style={{ marginVertical: 10 }}>
-                <Text style={{ marginBottom: 5, fontSize: 14 }}>
-                  {zone.text}
-                </Text>
-                <View
-                  style={{
-                    ...styles.dragZoneStyle,
-                    minHeight: 150,
-                    backgroundColor: hover ? "#E2E2E2" : "#FFF",
-                  }}
-                >
-                  {children}
-                </View>
-              </View>
-            )}
-          />
-        </View>
-      </ScrollView>
+      {/* Wordwall Game Iframe */}
+      <View style={styles.webViewContainer}>
+        <WebView
+          source={{
+            uri: "https://wordwall.net/id/embed/07da641d8b2f41a889f0bbc9c041c18e?themeId=62&templateId=3&fontStackId=0",
+          }}
+          style={styles.webView}
+          allowsFullscreenVideo
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  dragDropContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-  },
-  contentContainerStyle: {
-    padding: 20,
-    paddingTop: 20,
     backgroundColor: "#f3f4f6",
-    height: "100%",
   },
-  dragItemStyle: {
-    borderColor: "#6b7280",
-    borderRadius: 4,
-    borderWidth: 1,
+  header: {
+    backgroundColor: "#fff",
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingHorizontal: 15,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 5,
-    backgroundColor: "#F5F5F5",
-    padding: 10,
-    width: "100%", // Ensure the item takes the full width
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  dragItemTextStyle: {
-    color: "#011F3B",
-    fontWeight: "700",
-    textAlign: "center",
+  headerText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#007BFF",
+    marginLeft: 10,
   },
-  dragZoneStyle: {
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 15,
+  webViewContainer: {
+    flex: 1,
+  },
+  webView: {
+    flex: 1,
   },
 });

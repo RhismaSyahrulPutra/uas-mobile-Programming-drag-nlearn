@@ -8,7 +8,7 @@ import {
 import React, { useEffect, useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { supabase } from "../../../client/supabaseClient"; // pastikan ini sudah diatur dengan benar
+import { supabase } from "../../../client/supabaseClient";
 
 export default function FactOrHoax() {
   const navigation = useNavigation();
